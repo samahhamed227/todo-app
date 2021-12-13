@@ -6,3 +6,7 @@
 
 # Uml 
 ![](uml.png)
+
+# sandBox lab 32
+
+### [sandbox](https://codesandbox.io/s/young-snowflake-byqwx)
