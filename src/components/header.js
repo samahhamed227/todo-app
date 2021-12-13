@@ -5,10 +5,10 @@ export default function Headers(props){
     return(
         <Navbar class="bp3-navbar bp3-dark">
         <Navbar.Group>
-            <Navbar.Heading>To Do List: {props.incomplete} items pending</Navbar.Heading>
+            <Navbar.Heading>To Do List:</Navbar.Heading>
             <Navbar.Divider />
-            <Button className="bp3-minimal" icon="home" text="Home" />
-            <Button className="bp3-minimal" icon="document" text="Files" />
+            <a href="/"><Button className="bp3-minimal" icon="home" text="Home" /></a>
+        <a href="/settings"><Button className="bp3-minimal" icon="cog" text="Settings" /></a>
         </Navbar.Group>
     </Navbar>
     )
