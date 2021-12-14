@@ -4,6 +4,7 @@ import List from '../list';
 import Form from '../form';
 import Headers from '../header';
 
+
 const ToDo = () => {
 
   const [list, setList] = useState([]);
@@ -39,10 +40,16 @@ const ToDo = () => {
 
   return (
     <>
+  
     <Headers/>
-      <h1>To Do List: {incomplete} items pending</h1>
+  
+
+  <h1>To Do List: {incomplete} items pending</h1>
       <Form addItem={addItem}/>
       <List list={list} toggleComplete={toggleComplete}/>
+    
+  
+     
     </>
   );
 };

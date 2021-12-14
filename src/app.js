@@ -1,29 +1,39 @@
 import React from 'react';
-import { BrowserRouter as Router, Switch, Route, } from 'react-router-dom';
-
-import ToDo from './components/todo/todo.js';
-import SettingProvider from './context/context';
-import Headers from './components/header';
-import Settings from './components/setting';
-import 'normalize.css';
-import '@blueprintjs/core/lib/css/blueprint.css';
-import '@blueprintjs/icons/lib/css/blueprint-icons.css';
-
+import SettingContext from './context/context';
+import Header from './components/header';
+import ToDo from './components/todo/todo';
+// import './app.scss';
+import Setting from './components/setting';
+import Login from './components/login';
+import LoginContext from './context/logincontext';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link
+} from "react-router-dom";
 export default class App extends React.Component {
   render() {
     return (
-      <SettingProvider>
-        <Router>
-          <Switch>
-              <Route exact path='/settings' >
-                <Settings/>
-              </Route>
-              <Route exact path='/'>
-                <ToDo />
-              </Route>
-          </Switch>
-        </Router>
-      </SettingProvider>
+      <>
+
+        <LoginContext>
+        <Login/>
+          <SettingContext>
+            <Header/>
+            <ToDo />
+          </SettingContext>
+
+        </LoginContext>
+
+
+
+
+
+
+      </>
+
     );
+
   }
 }
