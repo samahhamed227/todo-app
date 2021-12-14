@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react'
 import { SettingsContext } from '../context/context';
-
+import Auth from './auth'
 export default function List(props) {
 
   const settingsContext = useContext(SettingsContext);
@@ -49,7 +49,8 @@ export default function List(props) {
   }
 
   return (
-    <div>
+    <Auth capability='read'>
+      <div>
       <button onClick={completed} >View Completed: </button>
       {currentItems.map(item => (
         <div key={item.id}>
@@ -64,5 +65,6 @@ export default function List(props) {
       {navigate()}
       {currentPage < numOfPages && <button onClick={() => { setCurrentPage(currentPage + 1) }} >Next</button>}
     </div>
+    </Auth>
   )
 }
