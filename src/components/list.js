@@ -1,70 +1,62 @@
-import React, { useState, useContext, useEffect } from 'react'
-import { SettingsContext } from '../context/context';
-import Auth from './auth'
-export default function List(props) {
+import { useEffect, useState } from "react";
+import Button from "react-bootstrap/Button";
+import superagent from "superagent";
+import cookie from "react-cookies";
 
-  const settingsContext = useContext(SettingsContext);
-  const [currentItems, setCurrentItems] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [numOfPages, setNumOfPages] = useState(Math.ceil(props.list.length / settingsContext.perPage));
+function List(props) {
+  const [finalArray, setFinalArray] = useState([]);
 
-  useEffect(() => {
-    let start = (currentPage - 1) * settingsContext.perPage;
-    let end = start + settingsContext.perPage;
-    setNumOfPages(Math.ceil(props.list.length / settingsContext.perPage));
-    setCurrentItems(props.list.slice(start, end));
-  },[props.list.length]);
+  useEffect(async () => {
+    const token = cookie.load("token");
+    let response = await superagent
+      .get("https://samah-auth.herokuapp.com/todo")
+      .set("authorization", `Bearer ${token}`);
+    setFinalArray(response.body.todo);
+  },[finalArray]);
 
-  useEffect(() => {
-    if (settingsContext.showCompleted) {
-      let start = (currentPage - 1) * settingsContext.perPage;
-      let end = start + settingsContext.perPage;
-      setCurrentItems(props.list.slice(start, end));
-      setNumOfPages(Math.ceil(props.list.length / settingsContext.perPage));
-    } else {
-      let temp = props.list.filter((item) => {
-        return item.complete === false
-      })
-      let start = (currentPage - 1) * settingsContext.perPage;
-      let end = start + settingsContext.perPage;
-      setCurrentItems(temp.slice(start, end));
-      setNumOfPages(Math.ceil(temp.length / settingsContext.perPage))
-    }
-  }, [currentPage, settingsContext.showCompleted]);
-
-  function changeCurrentPage(num) {
-    setCurrentPage(num);
+  async function handledelete(index) {
+    const token = cookie.load("token");
+    let response = await superagent
+      .delete(`https://samah-auth.herokuapp.com/todo?index=${index}`)
+      .set("authorization", `Bearer ${token}`);
+    setFinalArray(response.body.todo);
   }
 
-  function completed() {
-    settingsContext.setshowCompleted(!settingsContext.showCompleted);
-  }
-
-  const navigate  = () => {
-    let page = [];
-    for (let i = 1; i <= numOfPages; i++) {
-      page.push(<button onClick={() => { changeCurrentPage(i) }} key={i}>{i}</button>)
-    }
-    return page;
-  }
 
   return (
-    <Auth capability='read'>
-      <div>
-      <button onClick={completed} >View Completed: </button>
-      {currentItems.map(item => (
-        <div key={item.id}>
-          <p>{item.text}</p>
-          <p><small>Assigned to: {item.assignee}</small></p>
-          <p><small>Difficulty: {item.difficulty}</small></p>
-          <button onClick={() => props.toggleComplete(item.id)}>Complete: {item.complete.toString()}</button>
-          <hr />
-        </div>
+    <div className="list-container">
+      {finalArray.map((item, idx) => (
+        <>
+          <div key={item.id}>
+            <h6>Todo Item: {item.item}</h6>
+            <p>
+              <small>Assigned to: {item.assign}</small>
+            </p>
+            <p>
+              <small>Difficulty: {item.difficulty ? item.difficulty : 3}</small>
+            </p>
+
+            <br />
+            <Button
+              className="delete-btn"
+              variant="danger"
+              onClick={() => handledelete(idx)}
+            >
+              Delete
+            </Button>
+
+            <Button
+              onClick={() => props.toggleComplete(item.id)}
+              variant="warning"
+            >
+              Complete: {item.complete ? "done" : "pending"}
+            </Button>
+            <hr />
+          </div>
+        </>
       ))}
-      {currentPage > 1 && <button onClick={() => { setCurrentPage(currentPage - 1) }}>Previous</button>}
-      {navigate()}
-      {currentPage < numOfPages && <button onClick={() => { setCurrentPage(currentPage + 1) }} >Next</button>}
     </div>
-    </Auth>
-  )
+  );
 }
+
+export default List;
