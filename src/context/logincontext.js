@@ -1,75 +1,91 @@
-import React from 'react';
-import cookie from 'react-cookies';
-import jwt from 'jsonwebtoken';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import superagent from "superagent";
+import base64 from "base-64";
+import cookie from "react-cookies";
+import jwt from "jsonwebtoken";
 
-const testUsers = {
-  admin: {password:'password', name:'Administrator', role:'admin', capabilities:['create','read','update','delete']},
-  editor: { password: 'password', name: 'Editor', role: 'editor', capabilities: ['read', 'update']},
-  writer: { password: 'password', name: 'Writer', role: 'writer', capabilities: ['create']},
-};
+const API = "https://samah-auth.herokuapp.com/";
+export const AuthContext = React.createContext();
 
-export const LoginContext = React.createContext();
+export default function Auth(props) {
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [user, setUser] = useState({});
 
-class LoginProvider extends React.Component {
+  useEffect(() => {
+    const token = cookie.load("token");
+    validateToken(token);
+    console.log("ueseeeeee",user);
+  }, []);
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      loggedIn: false,
-      can: this.can,
-      login: this.login,
-      logout: this.logout,
-      user: {capabilities:[]},
-    };
-  }
-
-  can = (capability) => {
-    return this?.state?.user?.capabilities?.includes(capability);
-  }
-
-  login = (username, password) => {
-    if (testUsers[username]) {
-      // Create a "good" token, like you'd get from a server
-      const token = jwt.sign(testUsers[username], process.env.REACT_APP_SECRET||'secret');
-      this.validateToken(token);
+  const validateToken = (token) => {
+    if (token !== undefined && token !== "null" && token !== "") {
+      const user = jwt.decode(token);
+      setLoginState(true, token, user);
+    } else {
+      setLoginState(false, null, {});
     }
-  }
-
-  logout = () => {
-    this.setLoginState(false, null, {});
   };
 
-  validateToken = token => {
+  const setLoginState = async (isLogged, token, user) => {
     try {
-      let user = jwt.verify(token, process.env.REACT_APP_SECRET||'secret');
-      this.setLoginState(true, token, user);
+      cookie.save("token", token);
+      setUser(user);
+      setLoggedIn(isLogged);
+    } catch (error) {
+      console.log(error.message);
     }
-    catch (e) {
-      this.setLoginState(false, null, {});
-      console.log('Token Validation Error', e);
-    }
-
   };
 
-  setLoginState = (loggedIn, token, user) => {
-    cookie.save('auth', token);
-    this.setState({ token, loggedIn, user });
+  const login = async (username, password) => {
+    try {
+      const response = await superagent
+        .post(`${API}/signin`)
+        .set(
+          "authorization",
+          `Basic ${base64.encode(`${username}:${password}`)}`
+        );
+      console.log("context signin:", response);
+      validateToken(response.body.token);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  componentDidMount() {
-    const qs = new URLSearchParams(window.location.search);
-    const cookieToken = cookie.load('auth');
-    const token = qs.get('token') || cookieToken || null;
-    this.validateToken(token);
-  }
+  const logout = () => {
+    cookie.remove('token');
+    localStorage.clear();
+    setLoginState(false, "", {});
+  };
 
-  render() {
-    return (
-      <LoginContext.Provider value={this.state}>
-        {this.props.children}
-      </LoginContext.Provider>
-    );
-  }
+  const signup = async (username, password, role) => {
+    try {
+      let body = {
+        username: username,
+        password: password,
+        role: role,
+      };
+      const response = await axios.post(`${API}/signup`, body);
+      console.log("context signUp:", response);
+      validateToken(response.data.token);
+    } catch (error) {
+      console.log("from signup", error.message);
+    }
+  };
+
+  const state = {
+    validateToken,
+    setLoginState,
+    logout,
+    login,
+    signup,
+    loggedIn,
+    setLoggedIn,
+    user,
+    setUser,
+  };
+
+  return (
+    <AuthContext.Provider value={state}>{props.children}</AuthContext.Provider>
+  );
 }
-
-export default LoginProvider;

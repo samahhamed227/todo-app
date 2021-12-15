@@ -1,34 +1,53 @@
 import React from "react";
-import useForm from '../hooks/form';
-import { FormGroup,InputGroup } from '@blueprintjs/core';
-import Auth from './auth';
+import useForm from "../hooks/form";
+import { Button, FormGroup, InputGroup, Intent } from "@blueprintjs/core";
+// import "./form.css";
 
-export default function Form(props){
-    const { handleChange, handleSubmit } = useForm(props.addItem);
+function Form(props) {
+  const { handleSubmit, handleChange } = useForm(props.addItem);
 
-    return(
-      <Auth capability='create'>
-        <form onSubmit={handleSubmit}>
-            <h2>Add To Do Item</h2>
-            <FormGroup 
-            label="To Do Item"
-            labelFor="text-input">
-               <InputGroup onChange={handleChange} name="text" type="text" placeholder="Item Details"/>
-            </FormGroup>
-
-            <FormGroup 
-            label="Assigned To"
-            labelFor="text-input">
-              <input onChange={handleChange} name="assignee" type="text" placeholder="Assignee Name" />
-            </FormGroup>
-
-            <FormGroup 
-            label="Difficulty"
-            labelFor="text-input">
-              <input onChange={handleChange} defaultValue={3} type="range" min={1} max={5} name="difficulty" />
-            </FormGroup>
-            <button type="submit">Add Item</button>
-        </form>
-    </Auth>
-    )
+  return (
+    <div className="form-container">
+      <form onSubmit={handleSubmit}>
+        <h1>Add ToDo Item</h1>
+        <FormGroup label={"Todo Item"} labelFor="text-input">
+          <InputGroup
+            id="text-input"
+            placeholder="Item Details"
+            onChange={handleChange}
+            name="item"
+            type="text"
+            intent={Intent.PRIMARY}
+            required
+          />
+        </FormGroup>
+        <FormGroup label={"Assigned To"} labelFor="assign-input">
+          <InputGroup
+            id="assign-input"
+            placeholder="Assignee Name"
+            onChange={handleChange}
+            name="assign"
+            type="text"
+            intent={Intent.PRIMARY}
+            required
+          />
+        </FormGroup>
+        <FormGroup label={"Difficulty( 1 --> 5 )"} labelFor="difficulty-input">
+          <InputGroup
+            id="difficulty-input"
+            onChange={handleChange}
+            defaultValue={3}
+            type="range"
+            min={1}
+            max={5}
+            name="difficulty"
+          />
+        </FormGroup>
+        <br />
+        <Button type="submit">Add Item</Button>
+      </form>
+    </div>
+  );
 }
+
+export default Form;
